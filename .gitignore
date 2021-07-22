@@ -1,0 +1,15 @@
+/*
+/*/
+
+!/app/
+!/ops/
+!/.dockerignore
+!/.gitignore
+!/Dockerfile
+!/Makefile
+!/pyproject.toml
+!/poetry.lock
+!/README.md
+
+**/__pycache__
+**/.DS_Store

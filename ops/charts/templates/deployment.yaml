@@ -1,0 +1,51 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    group: {{ .Values.app.group }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+        group: {{ .Values.app.group }}
+      annotations:
+        opentelemetry.io/service.name: {{ .Values.app.name }}
+        opentelemetry.io/service.version: {{ .Values.app.container.tag }}
+        opentelemetry.io/deployment.environment: {{ .Values.environment }}
+    spec:
+      containers:
+        - name: {{ .Values.app.name }}
+          image: {{ .Values.app.container.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.app.container.port }}
+          envFrom:
+            {{- range .Values.app.container.config }}
+            - configMapRef:
+                name: {{ .name }}
+            {{- end}}
+          env:
+            # Used by k8s_tagger agent to inject pod IP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: SERVICE_NAME
+              value: {{ .Values.app.name }}
+            - name: ENVIRONMENT
+              value: {{ .Values.environment }}
+              # This is picked up by the opentelemetry sdks
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://$(HOST_IP):4317"
+            {{- range .Values.app.container.env}}
+            - name: {{ .key}}
+              value: {{ .value}}
+            {{- end}}

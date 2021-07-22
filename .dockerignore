@@ -1,0 +1,10 @@
+/*
+/*/
+
+!/app/
+!/Makefile
+!/pyproject.toml
+!/poetry.lock
+
+**/__pycache__
+**/.DS_Store
